@@ -1,7 +1,6 @@
 export function doIt() {
   const [rulesS, inputS] = input.split(`\n\n`);
   const inputs = inputS.split("\n");
-  const maxInputLen = Math.max(...inputs.map((i) => i.length));
   const rules = rulesS
     .split(`\n`)
     .map((line) => {
@@ -12,7 +11,8 @@ export function doIt() {
       };
     })
     .reduce((map, r) => map.set(r.name, r.rule), new Map<string, string[][]>());
-  // first - can be done using match(), leaving here as an alternative path
+
+  // first - can be done using match(), left here as an alternative path
   const answers = enumerateAnswers(rules).reduce(
     (set, a) => set.add(a),
     new Set<string>()
@@ -25,7 +25,7 @@ export function doIt() {
     ["42", "11", "31"],
   ]);
   const second = inputs.filter((i) =>
-    match(i, ["0"], rules, maxInputLen).some((m) => m === i.length)
+    match(i, ["0"], rules).some((m) => m === i.length)
   );
   console.log(first.length, second.length);
 }
@@ -33,8 +33,7 @@ export function doIt() {
 function match(
   input: string,
   ruleKeys: string[],
-  rules: Map<string, string[][]>,
-  maxInputLen: number
+  rules: Map<string, string[][]>
 ): number[] {
   if (ruleKeys.length === 1 && ruleKeys[0][0] === '"') {
     return ruleKeys[0][1] === input[0] ? [1] : [];
@@ -47,8 +46,8 @@ function match(
       .map((prevMatch) =>
         rule!
           .map((row) =>
-            match(input.substr(prevMatch), row, rules, maxInputLen).map(
-              (x) => prevMatch + x
+            match(input.substr(prevMatch), row, rules).map(
+              (matchLength) => prevMatch + matchLength
             )
           )
           .reduce((a, b) => [...a, ...b], [])
