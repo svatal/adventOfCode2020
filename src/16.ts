@@ -1,3 +1,5 @@
+import { extractUniques } from "./utils";
+
 export function doIt() {
   const [rulesDef, yourTicketDef, nearbyDef] = input.split(`\n\n`);
   const rules = rulesDef.split("\n").map((line) => {
@@ -27,25 +29,15 @@ export function doIt() {
     (prev, ticket) => ticket.map((n, i) => [...(prev[i] || []), n]),
     [] as number[][]
   );
-  let matching = values.map((vs, i) => ({
-    i,
+  let matching = values.map((vs, index) => ({
+    index,
     names: rules
       .filter((rule) => vs.every((v) => matchesRule(v, rule)))
       .map((rule) => rule.name),
   }));
-  const matched: string[] = [];
-  while (matching.length > 0) {
-    const singles = matching.filter((m) => m.names.length === 1);
-    singles.forEach((s) => (matched[s.i] = s.names[0]));
-    matching = matching
-      .map((m) => ({
-        ...m,
-        names: m.names.filter((n) => matched.indexOf(n) === -1),
-      }))
-      .filter((m) => m.names.length !== 0);
-  }
+  const matched = extractUniques(matching, "names");
   const myTicket = matched
-    .map((name, i) => ({ name, value: yourTicket[i] }))
+    .map((m) => ({ name: m.names, value: yourTicket[m.index] }))
     .filter((f) => f.name.startsWith("departure"))
     .map((f) => f.value)
     .reduce((a, b) => a * b);

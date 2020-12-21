@@ -1,3 +1,5 @@
+import { extractUniques } from "./utils";
+
 export function doIt() {
   const parsed = input.split(`\n`).map((line) => {
     const match = /(.*) \(contains (.*)\)/.exec(line)!;
@@ -20,19 +22,11 @@ export function doIt() {
   let candidates = Array.from(
     candidatesM.entries()
   ).map(([allergen, candidates]) => ({ allergen, candidates }));
-  const allergens = new Map<string, string>();
-  while (candidates.length) {
-    const matched = candidates.filter((a) => a.candidates.length === 1);
-    matched.forEach((a) => allergens.set(a.candidates[0], a.allergen));
-    candidates = candidates
-      .map(({ allergen, candidates }) => ({
-        allergen,
-        candidates: candidates.filter(
-          (c) => matched.find((a) => a.candidates[0] === c) === undefined
-        ),
-      }))
-      .filter((a) => a.candidates.length > 0);
-  }
+
+  const allergens = extractUniques(candidates, "candidates").reduce(
+    (map, match) => map.set(match.candidates, match.allergen),
+    new Map<string, string>()
+  );
   const first = parsed
     .map(
       (f) => f.ingredients.filter((i) => allergens.get(i) === undefined).length
